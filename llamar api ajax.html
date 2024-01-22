@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Llamada a API con AJAX</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  </head>
+  <body>
+    <div id="resultados-ajax"></div>
+
+    <script>
+      // Función para hacer la llamada a la API con AJAX y procesar los resultados
+      function llamarAPIAjax() {
+        $.ajax({
+          url: "http://127.0.0.1:8000",
+          type: "GET",
+          dataType: "json",
+          success: function (data) {
+            // Procesar los datos obtenidos
+            mostrarDatos(data, "resultados-ajax");
+          },
+          error: function (error) {
+            console.error("Error en la llamada a la API:", error);
+          },
+        });
+      }
+
+      // Función para mostrar los datos en el HTML
+      function mostrarDatos(data, containerId) {
+        var resultadosDiv = $("#" + containerId);
+
+        // Limpiar resultados anteriores
+        resultadosDiv.empty();
+
+        // Iterar sobre los datos y mostrarlos
+        $.each(data, function (index, item) {
+          resultadosDiv.append("<p>" + item.nombre + "</p>");
+        });
+      }
+
+      // Llamar a la API cuando la página se carga
+      $(document).ready(function () {
+        llamarAPIAjax();
+      });
+    </script>
+  </body>
+</html>
