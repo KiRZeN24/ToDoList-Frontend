@@ -13,7 +13,7 @@ COPY . .
 # Ejecutar el comando npm set progress=false && npm install
 RUN npm set progress=false && npm install
 
-# Exponer el puerto 8086 de el contenedor docker, fin de documentación
+# Exponer el puerto 8086 de el contenedor docker
 EXPOSE 8086
 
 # Correrá este comando al final cuando se esté corriendo el contenedor

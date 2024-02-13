@@ -1,74 +1,65 @@
 import React, { useState } from "react";
+import axios from "axios";
 
-const LoginForm = () => {
+
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    const csrfToken = document
+      .querySelector('meta[name="csrf-token"]')
+      .getAttribute("content");
+
+    axios.defaults.headers.common["X-CSRF-TOKEN"] = csrfToken;
+    axios.defaults.headers.common["Accept"] = "application/json";
+
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-TOKEN": document
-            .querySelector('meta[name="csrf-token"]')
-            .getAttribute("content"),
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
+      const response = await axios.post("http://127.0.0.1:8000/api/login", {
+        email: email,
+        password: password,
       });
 
-      if (!response.ok) {
-        throw new Error("Error al iniciar sesión");
+      console.log(response.data);
+      if (response.status === 200) {
+        window.location.href = "/lista.js";
       }
-
-      const data = await response.json();
-
-      // Si la autenticación es exitosa, Laravel generalmente devuelve un token
-      const token = data.access_token;
-
-      // Aquí puedes almacenar el token en el estado global o en una cookie para futuras solicitudes
-      console.log("Inicio de sesión exitoso. Token:", token);
     } catch (error) {
-      console.error("Error al iniciar sesión:", error.message);
+      setError("E-mail o contraseña incorrectos.");
+      console.error("Error al iniciar sesión:", error);
     }
   };
 
   return (
     <div>
-      <h2>Login</h2>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleLogin();
-        }}
-      >
-        {/* Agrega el token CSRF al formulario */}
-        @csrf
-        <label>
-          Correo electrónico:
+      <h2>Iniciar sesión</h2>
+      <form onSubmit={handleLogin}>
+        <div>
+          <label htmlFor="email">E-mail:</label>
           <input
             type="email"
+            id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-        </label>
-        <br />
-        <label>
-          Contraseña:
+        </div>
+        <div>
+          <label htmlFor="password">Contraseña:</label>
           <input
             type="password"
+            id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-        </label>
-        <br />
+        </div>
         <button type="submit">Iniciar sesión</button>
       </form>
+      {error && <p>{error}</p>}
     </div>
   );
-};
+}
 
 export default LoginForm;
