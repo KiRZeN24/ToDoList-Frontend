@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -10,23 +9,47 @@ function LoginForm() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const csrfToken = document
-      .querySelector('meta[name="csrf-token"]')
-      .getAttribute("content");
-
-    axios.defaults.headers.common["X-CSRF-TOKEN"] = csrfToken;
+    // axios.defaults.withCredentials = true;
+    // axios.defaults.withXSRFToken = true;
     axios.defaults.headers.common["Accept"] = "application/json";
+    /*axios.defaults.headers.common["Access-Control-Allow-Credentials"] = true;*/
+
+    const ApiAuth = axios.create({
+      baseURL: "http://127.0.0.1:8000",
+    });
+    ApiAuth.interceptors.request.use((config) => {
+      const token = decodeURIComponent(
+        document.cookie.replace("XSRF-TOKEN=", "")
+      );
+      ApiAuth.defaults.headers["X-XSRF-TOKEN"] = token;
+      return config;
+    });
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/login", {
-        email: email,
-        password: password,
-      });
+      await ApiAuth
+        .get("http://127.0.0.1:8000/sanctum/csrf-cookie")
+        .then((response) => {
+          debugger;
+          console.log(document.cookie);
+          try {
+            ApiAuth
+              .post("http://127.0.0.1:8000/api/login", {
+                email: email,
+                password: password,
+              })
+              .then((response) => {
+                window.location.href = "/lista.js";
+              });
 
-      console.log(response.data);
-      if (response.status === 200) {
-        window.location.href = "/lista.js";
-      }
+            /*  console.log(response.data);
+            if (response.status === 200) {
+              window.location.href = "/lista.js";
+            }*/
+          } catch (error) {
+            setError("E-mail o contraseña incorrectos.");
+            console.error("Error al iniciar sesión:", error);
+          }
+        });
     } catch (error) {
       setError("E-mail o contraseña incorrectos.");
       console.error("Error al iniciar sesión:", error);
